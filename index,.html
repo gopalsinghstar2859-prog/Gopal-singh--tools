@@ -1,0 +1,153 @@
+
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gopal Singh Tools - Calculator</title>
+<style>
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: linear-gradient(135deg,#141e30,#243b55);
+  color: white;
+  text-align: center;
+}
+header {
+  padding: 20px;
+  background: #ff9800;
+  color: #111;
+  font-size: 24px;
+  font-weight: bold;
+}
+.calculator {
+  width: 90%;
+  max-width: 370px;
+  margin: 35px auto;
+  padding: 20px;
+  background: #202c3b;
+  border-radius: 20px;
+  box-shadow: 0 5px 20px #0008;
+}
+#display {
+  width: 100%;
+  height: 70px;
+  margin-bottom: 15px;
+  border: none;
+  border-radius: 12px;
+  background: #fff;
+  color: #111;
+  text-align: right;
+  font-size: 30px;
+  padding: 10px;
+}
+.buttons {
+  display: grid;
+  grid-template-columns: repeat(4,1fr);
+  gap: 10px;
+}
+button {
+  height: 65px;
+  border: none;
+  border-radius: 12px;
+  font-size: 23px;
+  font-weight: bold;
+  background: #34495e;
+  color: white;
+  cursor: pointer;
+}
+button:active {
+  transform: scale(.95);
+}
+.operator {
+  background: #ff9800;
+  color: black;
+}
+.clear {
+  background: #e53935;
+}
+.equal {
+  background: #00c853;
+  color: black;
+}
+footer {
+  margin: 25px;
+  color: #ddd;
+}
+</style>
+</head>
+<body>
+
+<header>Gopal Singh Tools</header>
+
+<div class="calculator">
+<h2>🧮 Calculator</h2>
+
+<input type="text" id="display"
+placeholder="0" readonly>
+
+<div class="buttons">
+<button class="clear" onclick="clearDisplay()">C</button>
+<button onclick="deleteLast()">⌫</button>
+<button class="operator" onclick="add('%')">%</button>
+<button class="operator" onclick="add('/')">÷</button>
+
+<button onclick="add('7')">7</button>
+<button onclick="add('8')">8</button>
+<button onclick="add('9')">9</button>
+<button class="operator" onclick="add('*')">×</button>
+
+<button onclick="add('4')">4</button>
+<button onclick="add('5')">5</button>
+<button onclick="add('6')">6</button>
+<button class="operator" onclick="add('-')">−</button>
+
+<button onclick="add('1')">1</button>
+<button onclick="add('2')">2</button>
+<button onclick="add('3')">3</button>
+<button class="operator" onclick="add('+')">+</button>
+
+<button onclick="add('0')">0</button>
+<button onclick="add('00')">00</button>
+<button onclick="add('.')">.</button>
+<button class="equal" onclick="calculate()">=</button>
+</div>
+</div>
+
+<footer>© 2026 Gopal Singh Tools</footer>
+
+<script>
+const display = document.getElementById("display");
+
+function add(value) {
+  display.value += value;
+}
+
+function clearDisplay() {
+  display.value = "";
+}
+
+function deleteLast() {
+  display.value = display.value.slice(0,-1);
+}
+
+function calculate() {
+  try {
+    let expression = display.value;
+    if (!expression || !/^[0-9+\-*/%.() ]+$/.test(expression)) {
+      throw new Error("Invalid");
+    }
+    let result = Function('"use strict"; return (' + expression + ')')();
+    if (!Number.isFinite(result)) throw new Error("Invalid");
+    display.value = Number(result.toPrecision(12)).toString();
+  } catch {
+    display.value = "Error";
+  }
+}
+</script>
+
+</body>
+</html>
