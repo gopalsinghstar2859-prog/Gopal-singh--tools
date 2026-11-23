@@ -3,200 +3,209 @@
 <html lang="hi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Gopal Singh Video Tools</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gopal Singh Tools</title>
 <style>
-body{margin:0;font-family:Arial;background:#10172a;color:white;text-align:center}
-header{background:#075ee8;padding:22px}
-h1{margin:5px}
-.container{padding:15px;max-width:600px;margin:auto}
-.tool{background:#202d48;padding:18px;margin:15px 0;border-radius:15px}
-button{background:#087cf5;color:white;border:0;padding:12px;margin:5px;border-radius:8px;font-size:15px}
-input{max-width:95%;margin:10px;padding:9px}
-video{width:100%;background:black;border-radius:10px;margin-top:10px}
-a{color:#50d5ff}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial;background:#eef2ff;color:#222}
+header{background:#075ee8;color:white;text-align:center;padding:22px}
+.container{padding:15px;max-width:650px;margin:auto}
+.tool{background:white;padding:18px;margin:15px 0;border-radius:14px;box-shadow:0 3px 12px #0002}
+h2{color:#075ee8}
+button{background:#087cf5;color:white;border:0;padding:13px;border-radius:8px;font-size:16px;margin:5px;cursor:pointer}
+button:disabled{opacity:.5}
+input{width:100%;padding:12px;margin:8px 0;border:1px solid #aaa;border-radius:7px;font-size:16px}
+video{width:100%;background:black;margin-top:10px;border-radius:8px}
+.result{font-weight:bold;color:green}
+.calc{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+.calc button{margin:0;font-size:20px;padding:17px 5px}
+#display{text-align:right;font-size:26px}
 </style>
 </head>
 <body>
 <header>
 <h1>Gopal Singh Tools</h1>
-<p>Free Online Video Editing Tools</p>
+<p>Free Online Tools</p>
 </header>
 
 <div class="container">
+
 <div class="tool">
-<h2>1. Video Cutter</h2>
-<input type="file" id="cutFile" accept="video/*">
-<br>Start Time (Seconds)
-<input type="number" id="start" value="0" min="0">
-<br>End Time (Seconds)
-<input type="number" id="end" value="10" min="1">
-<button onclick="cutVideo()">Cut Video & Export</button>
+<h2>🎬 Video Cutting Tool</h2>
+<input type="file" id="videoFile" accept="video/*">
+<video id="video" controls playsinline></video>
+
+<label>Start Time (Seconds)</label>
+<input type="number" id="start" value="0" min="0" step="0.1">
+
+<label>End Time (Seconds)</label>
+<input type="number" id="end" value="5" min="0" step="0.1">
+
+<button id="cutBtn" onclick="cutVideo()">✂️ Cut Video & Export</button>
+<p id="status">पहले वीडियो अपलोड करें।</p>
+<a id="download" style="display:none" download="gopal-cut-video.webm">
+<button>⬇️ Download Video</button>
+</a>
 </div>
 
 <div class="tool">
-<h2>2. Video Merger</h2>
-<input type="file" id="merge1" accept="video/*">
-<p>पहला वीडियो</p>
-<input type="file" id="merge2" accept="video/*">
-<p>दूसरा वीडियो</p>
-<button onclick="mergeVideos()">दोनों वीडियो जोड़ें</button>
+<h2>🧮 Calculator</h2>
+<input id="display" readonly placeholder="0">
+<div class="calc">
+<button onclick="clearCalc()">C</button>
+<button onclick="del()">DEL</button>
+<button onclick="add('/')">÷</button>
+<button onclick="add('*')">×</button>
+<button onclick="add('7')">7</button>
+<button onclick="add('8')">8</button>
+<button onclick="add('9')">9</button>
+<button onclick="add('-')">−</button>
+<button onclick="add('4')">4</button>
+<button onclick="add('5')">5</button>
+<button onclick="add('6')">6</button>
+<button onclick="add('+')">+</button>
+<button onclick="add('1')">1</button>
+<button onclick="add('2')">2</button>
+<button onclick="add('3')">3</button>
+<button onclick="calculate()">=</button>
+<button onclick="add('0')">0</button>
+<button onclick="add('.')">.</button>
+</div>
 </div>
 
-<div class="tool">
-<h2>3. Extract Audio</h2>
-<input type="file" id="audioFile" accept="video/*">
-<button onclick="extractAudio()">Audio निकालें</button>
-</div>
-
-<div class="tool">
-<h2>4. Add Text on Video</h2>
-<input type="file" id="textFile" accept="video/*">
-<br>
-<input id="videoText" placeholder="अपना टेक्स्ट लिखें">
-<button onclick="addTextVideo()">Text लगाकर वीडियो बनाएँ</button>
-</div>
-
-<div class="tool">
-<h2>5. Video Download</h2>
-<input type="file" id="downloadFile" accept="video/*">
-<button onclick="downloadVideo()">Download Video</button>
-</div>
-
-<div class="tool">
-<h2>Video Preview</h2>
-<video id="preview" controls playsinline></video>
-<p id="status">अपना वीडियो चुनें</p>
-<a id="result" style="display:none" download="GopalSinghVideo.webm">वीडियो डाउनलोड करें</a>
-</div>
 </div>
 
 <script>
-const preview=document.getElementById('preview');
-const statusText=document.getElementById('status');
-const result=document.getElementById('result');
+const video=document.getElementById("video");
+const fileInput=document.getElementById("videoFile");
+const statusText=document.getElementById("status");
+const cutBtn=document.getElementById("cutBtn");
 
-function setStatus(t){statusText.textContent=t}
-function showFile(file){
+let videoURL=null;
+let busy=false;
+
+fileInput.addEventListener("change",()=>{
+ const file=fileInput.files[0];
  if(!file)return;
- preview.src=URL.createObjectURL(file);
- preview.load();
- setStatus("वीडियो तैयार है");
-}
-function saveBlob(blob,name){
- const url=URL.createObjectURL(blob);
- result.href=url;
- result.download=name;
- result.style.display='inline-block';
- result.textContent='यहाँ क्लिक करके डाउनलोड करें';
- preview.src=url;
- setStatus("काम पूरा हुआ!");
-}
+ if(videoURL)URL.revokeObjectURL(videoURL);
+ videoURL=URL.createObjectURL(file);
+ video.src=videoURL;
+ video.load();
+ document.getElementById("download").style.display="none";
+ statusText.textContent="वीडियो लोड हो रहा है...";
+});
 
-async function recordVideo(files,from,to,text,audioOnly=false){
- if(!window.MediaRecorder || !HTMLCanvasElement.prototype.captureStream){
-  alert("आपका ब्राउज़र वीडियो एक्सपोर्ट सपोर्ट नहीं करता।");
-  return;
- }
- const video=preview;
- const canvas=document.createElement('canvas');
- canvas.width=1280;canvas.height=720;
- const ctx=canvas.getContext('2d');
- const stream=canvas.captureStream(30);
- let audioCtx;
- let audioDest;
- try{
-  audioCtx=new AudioContext();
-  const source=audioCtx.createMediaElementSource(video);
-  audioDest=audioCtx.createMediaStreamDestination();
-  source.connect(audioDest);
-  source.connect(audioCtx.destination);
-  audioDest.stream.getAudioTracks().forEach(t=>stream.addTrack(t));
-  await audioCtx.resume();
- }catch(e){console.log(e)}
- const tracks=audioOnly?audioDest.stream:stream;
- let mime='video/webm;codecs=vp9,opus';
- if(!MediaRecorder.isTypeSupported(mime))mime='video/webm';
- if(audioOnly)mime='audio/webm';
- const recorder=new MediaRecorder(tracks,{mimeType:mime});
- const chunks=[];
- recorder.ondataavailable=e=>{if(e.data.size)chunks.push(e.data)};
- const done=new Promise(resolve=>recorder.onstop=()=>resolve());
- recorder.start();
-
- try{
-  for(let i=0;i<files.length;i++){
-   video.src=URL.createObjectURL(files[i]);
-   await new Promise(resolve=>{
-    video.onloadedmetadata=resolve;
-    video.load();
-   });
-   await video.play();
-   const start=i===0?from:0;
-   const end=i===0?Math.min(to,video.duration):video.duration;
-   video.currentTime=start;
-   await new Promise(resolve=>{
-    const check=()=>{
-     if(video.currentTime>=end || video.ended){
-      video.pause();resolve();
-     }else{
-      if(!audioOnly){
-       ctx.drawImage(video,0,0,1280,720);
-       if(text){
-        ctx.font='bold 48px Arial';
-        ctx.fillStyle='white';
-        ctx.textAlign='center';
-        ctx.fillText(text,640,650);
-       }
-      }
-      requestAnimationFrame(check);
-     }
-    };
-    video.addEventListener('seeked',function first(){
-     video.removeEventListener('seeked',first);
-     check();
-    });
-   });
-  }
- }catch(e){console.log(e)}
- recorder.stop();
- await done;
- if(audioCtx)await audioCtx.close();
- saveBlob(new Blob(chunks,{type:mime}),audioOnly?'GopalSinghAudio.webm':'GopalSinghVideo.webm');
-}
+video.addEventListener("loadedmetadata",()=>{
+ document.getElementById("start").value=0;
+ document.getElementById("end").value=Math.floor(video.duration);
+ statusText.textContent="वीडियो तैयार है।";
+});
 
 async function cutVideo(){
- const f=document.getElementById('cutFile').files[0];
- if(!f)return alert('पहले वीडियो चुनें');
- showFile(f);
- await recordVideo([f],Number(start.value),Number(end.value),'');
+ if(busy)return;
+ if(!video.src || !video.duration){
+  alert("पहले वीडियो अपलोड करें");
+  return;
+ }
+ if(!video.captureStream || !window.MediaRecorder){
+  alert("आपके ब्राउज़र में वीडियो एक्सपोर्ट की सुविधा उपलब्ध नहीं है। Chrome में कोशिश करें।");
+  return;
+ }
+
+ const start=Number(document.getElementById("start").value);
+ const end=Number(document.getElementById("end").value);
+
+ if(!Number.isFinite(start)||!Number.isFinite(end)||
+ start<0||end<=start||end>video.duration){
+  alert("सही Start और End Time डालें।");
+  return;
+ }
+
+ busy=true;
+ cutBtn.disabled=true;
+ statusText.textContent="वीडियो तैयार हो रहा है...";
+
+ try{
+  video.pause();
+  video.currentTime=start;
+
+  await new Promise((resolve,reject)=>{
+   video.addEventListener("seeked",resolve,{once:true});
+   video.addEventListener("error",reject,{once:true});
+  });
+
+  const stream=video.captureStream();
+  const mime=[
+   "video/webm;codecs=vp9,opus",
+   "video/webm;codecs=vp8,opus",
+   "video/webm"
+  ].find(type=>MediaRecorder.isTypeSupported(type));
+
+  if(!mime)throw new Error("WebM recording supported नहीं है।");
+
+  const recorder=new MediaRecorder(stream,{mimeType:mime});
+  const chunks=[];
+
+  recorder.ondataavailable=e=>{
+   if(e.data.size>0)chunks.push(e.data);
+  };
+
+  const stopped=new Promise((resolve,reject)=>{
+   recorder.onstop=resolve;
+   recorder.onerror=()=>reject(new Error("Recording में समस्या हुई।"));
+  });
+
+  recorder.start(250);
+
+  await video.play();
+
+  const timer=setInterval(()=>{
+   if(video.currentTime>=end || video.ended){
+    clearInterval(timer);
+    video.pause();
+    if(recorder.state==="recording")recorder.stop();
+   }
+  },50);
+
+  await stopped;
+  stream.getTracks().forEach(track=>track.stop());
+
+  const blob=new Blob(chunks,{type:"video/webm"});
+  if(!blob.size)throw new Error("वीडियो खाली है।");
+
+  const url=URL.createObjectURL(blob);
+  const link=document.getElementById("download");
+  link.href=url;
+  link.style.display="inline-block";
+  statusText.textContent="वीडियो तैयार है! Download Video दबाएँ।";
+ }catch(error){
+  statusText.textContent="समस्या: "+error.message;
+ }finally{
+  busy=false;
+  cutBtn.disabled=false;
+ }
 }
-async function mergeVideos(){
- const a=document.getElementById('merge1').files[0];
- const b=document.getElementById('merge2').files[0];
- if(!a||!b)return alert('दोनों वीडियो चुनें');
- await recordVideo([a,b],0,999999,'');
+
+function add(value){
+ document.getElementById("display").value+=value;
 }
-async function extractAudio(){
- const f=document.getElementById('audioFile').files[0];
- if(!f)return alert('वीडियो चुनें');
- showFile(f);
- await recordVideo([f],0,999999,'',true);
+function clearCalc(){
+ document.getElementById("display").value="";
 }
-async function addTextVideo(){
- const f=document.getElementById('textFile').files[0];
- const t=document.getElementById('videoText').value;
- if(!f||!t)return alert('वीडियो और टेक्स्ट दोनों डालें');
- await recordVideo([f],0,999999,t);
+function del(){
+ const d=document.getElementById("display");
+ d.value=d.value.slice(0,-1);
 }
-function downloadVideo(){
- const f=document.getElementById('downloadFile').files[0];
- if(!f)return alert('वीडियो चुनें');
- const a=document.createElement('a');
- a.href=URL.createObjectURL(f);
- a.download=f.name;
- a.click();
- setStatus('वीडियो डाउनलोड शुरू हुआ');
+function calculate(){
+ const d=document.getElementById("display");
+ try{
+  if(!/^[0-9+\-*/.() ]+$/.test(d.value))throw Error();
+  const result=Function('"use strict";return ('+d.value+')')();
+  if(!Number.isFinite(result))throw Error();
+  d.value=result;
+ }catch(e){
+  d.value="Error";
+ }
 }
 </script>
 </body>
