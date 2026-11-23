@@ -208,5 +208,36 @@ function calculate(){
  }
 }
 </script>
+ 
+<div style="max-width:450px;margin:20px auto;padding:20px;background:#eef5ff;border-radius:15px;font-family:Arial;text-align:center;">
+<h2>Smart Life Helper</h2>
+<p>अपनी आमदनी और खर्च लिखें</p>
+
+<input id="income" type="number" placeholder="आज की आमदनी ₹" style="padding:12px;width:90%;margin:8px;">
+<input id="expense" type="number" placeholder="आज का खर्च ₹" style="padding:12px;width:90%;margin:8px;">
+
+<button onclick="showBalance()" style="padding:13px;background:#1769d2;color:white;border:0;border-radius:8px;width:100%;">मेरा हिसाब निकालें</button>
+
+<div id="balance" style="margin-top:15px;font-weight:bold;"></div>
+</div>
+
+<script>
+function showBalance(){
+let i=document.getElementById("income").value;
+let e=document.getElementById("expense").value;
+
+if(i==="" || e===""){
+alert("आमदनी और खर्च दोनों भरें");
+return;
+}
+
+let saving=Number(i)-Number(e);
+
+document.getElementById("balance").innerHTML=
+"आमदनी: ₹"+i+"<br>खर्च: ₹"+e+
+"<br>बची हुई रकम: ₹"+saving;
+}
+</script>
+ 
 </body>
 </html>
