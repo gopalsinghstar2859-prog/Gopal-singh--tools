@@ -238,6 +238,21 @@ document.getElementById("balance").innerHTML=
 "<br>बची हुई रकम: ₹"+saving;
 }
 </script>
+ <section id="video-tools" style="padding:20px;background:#f0f8ff;border-radius:12px;">
+  <h2>🎬 Video Editing Tools</h2>
+  <p>Use our free online video tools.</p>
+  <input type="file" id="videoFile" accept="video/*">
+  <video id="videoPreview" controls style="width:100%;margin-top:10px;"></video>
+</section>
+
+<script>
+document.getElementById("videoFile").addEventListener("change", function() {
+  const file = this.files[0];
+  if (file) {
+    document.getElementById("videoPreview").src = URL.createObjectURL(file);
+  }
+});
+</script> 
  
 </body>
 </html>
